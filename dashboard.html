@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedicDr T2D - Patient Analytics Dashboard</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.2.1"></script>
+</head>
+
+<body>
+
+    <div class="app-container">
+
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div>
+                <div class="brand-logo">
+                    <h2>🩺 T2D Care <span>T2D AI</span></h2>
+                </div>
+
+                <div class="profile-card-mini">
+                    <div class="avatar-circle" id="userAvatar">--</div>
+                    <h4 id="dispName">Loading...</h4>
+                    <p id="dispAgeGender">Age: -- | --</p>
+                </div>
+
+                <nav class="sidebar-menu">
+                    <button class="menu-item active" onclick="location.href='dashboard.html'">📊 Dashboard
+                        Overview</button>
+                    <button class="menu-item" onclick="location.href='treatment.html'">💊 Treatment Plan</button>
+                    <button class="menu-item" onclick="location.href='lifestyle.html'">🏃 Lifestyle & Rules</button>
+                    <button class="menu-item" onclick="location.href='discuss.html'">💬 Discuss My Result</button>
+                    <button class="menu-item" onclick="location.href='settings.html'">⚙️ Settings</button>
+                </nav>
+            </div>
+
+            <button class="btn-logout" onclick="logout()">Sign Out</button>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+
+            <!-- Top Header -->
+            <div class="top-bar">
+                <div>
+                    <h2>Patient Analytics Dashboard</h2>
+                    <p>Welcome back! Real-time dynamic health parameters & glucose trajectory.</p>
+                </div>
+                <div class="search-bar">
+                    <input type="text" placeholder="Search analytics or logs...">
+                </div>
+            </div>
+
+            <!-- Top Metric Cards -->
+            <div class="metrics-row">
+                <div class="stat-box">
+                    <div class="stat-icon blue">⚖️</div>
+                    <div class="stat-info">
+                        <p>Calculated BMI</p>
+                        <h3 id="dispBMI">--</h3>
+                    </div>
+                </div>
+
+                <div class="stat-box">
+                    <div class="stat-icon purple">🩸</div>
+                    <div class="stat-info">
+                        <p>Recent HbA1c</p>
+                        <h3 id="dispA1c">-- %</h3>
+                    </div>
+                </div>
+
+                <div class="stat-box">
+                    <div class="stat-icon green">🎯</div>
+                    <div class="stat-info">
+                        <p>Estimated eA1c</p>
+                        <h3 id="dispeA1c">-- %</h3>
+                    </div>
+                </div>
+
+                <div class="stat-box">
+                    <div class="stat-icon orange">🛡️</div>
+                    <div class="stat-info">
+                        <p>Hypo Unawareness</p>
+                        <h3 id="dispHypoStatus">--</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Dashboard Grid Layout -->
+            <div class="dashboard-grid">
+
+                <!-- Left Column -->
+                <div class="left-column">
+
+                    <!-- Meal Logging -->
+                    <div class="card">
+                        <div class="card-title">
+                            <span>🍽️ Meal Logging & Decomposition</span>
+                            <span class="badge-status">Nutrition API</span>
+                        </div>
+                        <div class="meal-input-box">
+                            <input type="text" id="mealInput"
+                                placeholder="e.g., Rice plate with grilled chicken and salad">
+                            <button class="btn-action" id="btnAnalyze" onclick="analyzeMeal()">Analyze Meal 🥗</button>
+                        </div>
+                        <div id="nutritionResults" class="nutrients-inline" style="display: none;">
+                            <div class="nut-cell"><span>Carbs</span><strong id="nutCarbs">0g</strong></div>
+                            <div class="nut-cell"><span>Fiber</span><strong id="nutFiber">0g</strong></div>
+                            <div class="nut-cell"><span>Calories</span><strong id="nutCalories">0 kcal</strong></div>
+                            <div class="nut-cell"><span>Protein</span><strong id="nutProtein">0g</strong></div>
+                        </div>
+                        <!-- Carb Progress Bar -->
+                        <div class="carb-progress-container" style="margin-top: 15px;">
+                            <div
+                                style="display:flex; justify-content:space-between; font-size:12px; font-weight:600; margin-bottom:5px;">
+                                <span>Daily Carb Limit Allowance</span>
+                                <span id="carbLimitText">0 / 150g</span>
+                            </div>
+                            <div
+                                style="width:100%; background:#f0f0f0; border-radius:10px; height:10px; overflow:hidden;">
+                                <div id="carbProgressBar"
+                                    style="width: 0%; background:#4318ff; height:100%; transition: width 0.5s;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Glucose Prediction Chart -->
+                    <div class="card">
+                        <div class="card-title">
+                            <span>📈 Predicted 24-Hour Glucose Curve</span>
+                            <span class="badge-status blue-badge">PhysioNet ML Model</span>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="predictionChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- AI Guidance -->
+                    <div class="ai-insight-card">
+                        <h3>🤖 AI Smart Guidance</h3>
+                        <div id="llmAdviceBox">
+                            <p>Enter your daily meal above to run the predictive model and generate personalized
+                                clinical guidance.</p>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Right Column -->
+                <div class="right-column">
+
+                    <!-- Time in Range (TIR Chart) -->
+                    <div class="card">
+                        <div class="card-title">📊 Time In Range (7 Days)</div>
+                        <div style="height: 120px;">
+                            <canvas id="tirChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Medication Progress Ring -->
+                    <div class="card">
+                        <div class="card-title">💊 Today's Medication Adherence</div>
+                        <div style="height: 150px; position:relative;">
+                            <canvas id="medRingChart"></canvas>
+                        </div>
+                        <div class="info-list-group" style="margin-top: 10px;">
+                            <div class="info-item"><span>Treatment Type</span><strong id="dispRegime">--</strong></div>
+                            <div class="info-item"><span>Medication Details</span><strong
+                                    id="dispMedDetails">--</strong></div>
+                            <div class="info-item"><span>Hypo Risk</span><strong id="dispHypoRisk">--</strong></div>
+                        </div>
+                    </div>
+
+                    <!-- Medical Baseline -->
+                    <div class="card">
+                        <div class="card-title">📋 Medical Baseline</div>
+                        <div class="info-list-group">
+                            <div class="info-item"><span>BMI Category</span><strong id="dispBMICat">--</strong></div>
+                            <div class="info-item"><span>HbA1c Status</span><strong id="dispA1cStatus">--</strong></div>
+                            <div class="info-item"><span>Guideline Target</span><strong>70-180 mg/dL (NICE)</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </main>
+
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Setup - T2D Care</title>
+    <link rel="stylesheet" href="setup.css">
+</head>
+
+<body>
+
+    <div class="setup-container">
+        <div class="setup-card">
+
+            <div class="setup-header">
+                <h2>🩺 Personalize Your T2D Journey</h2>
+                <p>Set up your medical baseline to generate your personalized AI dashboard.</p>
+            </div>
+
+            <form id="patientSetupForm" onsubmit="savePatientProfile(event)">
+
+                <!-- Section 1: Personal & Physical Metrics -->
+                <div class="form-section">
+                    <h3>1. Basic & Physical Profile</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="fullName">Full Name</label>
+                            <input type="text" id="fullName" placeholder="e.g. Ahmed Ali" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="age">Age</label>
+                            <input type="number" id="age" placeholder="e.g. 35" min="18" max="90" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="weight">Weight (kg)</label>
+                            <input type="number" id="weight" placeholder="e.g. 82" min="30" max="250" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="height">Height (cm)</label>
+                            <input type="number" id="height" placeholder="e.g. 175" min="100" max="230" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: Clinical Baseline & Treatment -->
+                <div class="form-section">
+                    <h3>2. Treatment & Medical Targets</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="hba1c">Recent HbA1c (%)</label>
+                            <input type="number" id="hba1c" step="0.1" placeholder="e.g. 7.5" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="medicationType">Primary Treatment</label>
+                            <select id="medicationType" required>
+                                <option value="" disabled selected>Select regime...</option>
+                                <option value="oral">Oral Medications (e.g. Metformin)</option>
+                                <option value="glp1">GLP-1 Injections (e.g. Ozempic)</option>
+                                <option value="insulin">Insulin Therapy</option>
+                                <option value="lifestyle">Diet & Exercise Only</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="medications">Medication Names & Dosages</label>
+                        <input type="text" id="medications" placeholder="e.g. Metformin 500mg (2x/day)" required>
+                    </div>
+                </div>
+
+                <!-- Section 3: Baseline Glucose Readings -->
+                <div class="form-section">
+                    <h3>3. Recent Glucose Measurements (mg/dL)</h3>
+                    <p class="sub-label">Enter last 3 readings to initialize your prediction graph:</p>
+
+                    <div class="form-row three-cols">
+                        <div class="form-group">
+                            <label for="reading1">Fasting (صائم)</label>
+                            <input type="number" id="reading1" placeholder="e.g. 130" min="40" max="500" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="reading2">Post-Meal (بعد الأكل)</label>
+                            <input type="number" id="reading2" placeholder="e.g. 175" min="40" max="500" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="reading3">Bedtime / Random</label>
+                            <input type="number" id="reading3" placeholder="e.g. 145" min="40" max="500" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn-submit">
+                    Generate My Dashboard 📊 →
+                </button>
+
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

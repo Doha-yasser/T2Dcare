@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>MedicDr T2D - Lifestyle & Rules</title>
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="brand-logo">
+                <h2>🩺 T2D Care <span>T2D AI</span></h2>
+            </div>
+            <nav class="sidebar-menu">
+                <button class="menu-item" onclick="location.href='dashboard.html'">📊 Dashboard Overview</button>
+                <button class="menu-item" onclick="location.href='treatment.html'">💊 Treatment Plan</button>
+                <button class="menu-item active" onclick="location.href='lifestyle.html'">🏃 Lifestyle & Rules</button>
+                <button class="menu-item" onclick="location.href='settings.html'">⚙️ Settings</button>
+            </nav>
+            <button class="btn-logout" onclick="logout()">Sign Out</button>
+        </aside>
+
+        <main class="main-content">
+            <div class="top-bar">
+                <div>
+                    <h2>Lifestyle & Safety Settings</h2>
+                    <p>Activity factors, caloric corrections, and safety rules.</p>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top:20px;">
+                <h3>🏃 Activity & Target Rules</h3>
+                <div class="info-list-group" style="margin-top:15px;">
+                    <div class="info-item"><span>Activity Level</span><strong>Moderately Active (1.375)</strong></div>
+                    <div class="info-item"><span>Hypo Unawareness Alert</span><strong>Disabled</strong></div>
+                    <div class="info-item"><span>Target Range Guideline</span><strong>NICE Guideline (70 - 180
+                            mg/dL)</strong></div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="dashboard.js"></script>
+</body>
+
+</html>

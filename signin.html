@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In / Sign Up - T2D Care</title>
+    <link rel="stylesheet" href="auth.css">
+</head>
+
+<body>
+
+    <!-- AUTH SECTION -->
+    <div id="authSection" class="auth-container">
+        <div class="auth-card-split">
+
+            <div class="auth-image-side">
+                <img src="images/sign2.jpg" alt="T2D Care Illustration">
+                <div class="image-overlay-text">
+                    <h3>Take Control of Your Health</h3>
+                    <p>Track your glucose, meals, and get AI guidance effortlessly.</p>
+                </div>
+            </div>
+
+            <div class="auth-form-side">
+                <div class="auth-tabs">
+                    <button id="tabRegister" class="tab-btn active" onclick="switchAuthTab('register')">Sign Up</button>
+                    <button id="tabLogin" class="tab-btn" onclick="switchAuthTab('login')">Sign In</button>
+                </div>
+
+                <!-- Sign Up Form -->
+                <form id="registerForm" class="auth-form" onsubmit="handleRegister(event)">
+                    <h2>Create an Account</h2>
+                    <p>Start tracking your Type 2 Diabetes journey</p>
+
+                    <div class="form-group">
+                        <label for="regEmail">Email Address</label>
+                        <input type="email" id="regEmail" placeholder="e.g. ahmed@example.com" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="regPassword">Password</label>
+                        <input type="password" id="regPassword" placeholder="••••••••" required>
+                    </div>
+
+                    <button type="submit" class="btn-primary">Continue to Setup →</button>
+                </form>
+
+                <!-- Sign In Form -->
+                <form id="loginForm" class="auth-form" style="display: none;" onsubmit="handleLogin(event)">
+                    <h2>Welcome Back</h2>
+                    <p>Access your T2D Care dashboard</p>
+
+                    <div class="form-group">
+                        <label for="loginEmail">Email Address</label>
+                        <input type="email" id="loginEmail" placeholder="e.g. ahmed@example.com" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="loginPassword">Password</label>
+                        <input type="password" id="loginPassword" placeholder="••••••••" required>
+                    </div>
+
+                    <button type="submit" class="btn-primary">Sign In →</button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+</body>
+
+</html>

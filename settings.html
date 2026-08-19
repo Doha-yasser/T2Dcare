@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedicDr T2D - Comprehensive Settings</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <style>
+        .settings-section-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #4318ff;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #f0f2f5;
+            padding-bottom: 5px;
+            grid-column: span 2;
+        }
+
+        .settings-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #444;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 10px 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            outline: none;
+            font-family: inherit;
+            font-size: 14px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: #4318ff;
+        }
+
+        .checkbox-group {
+            flex-direction: row;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .checkbox-group input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .full-width {
+            grid-column: span 2;
+        }
+
+        .avatar-preview-box {
+            width: 85px;
+            height: 85px;
+            border-radius: 50%;
+            background: #4318ff;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: bold;
+            overflow: hidden;
+            border: 3px solid #e0e0e0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="app-container">
+
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div>
+                <div class="brand-logo">
+                    <h2>🩺 T2D Care <span>T2D AI</span></h2>
+                </div>
+
+                <div class="profile-card-mini">
+                    <div id="sidebarAvatarContainer">
+                        <div class="avatar-circle" id="userAvatar">--</div>
+                    </div>
+                    <h4 id="dispName">Loading...</h4>
+                    <p id="dispAgeGender">Age: -- | --</p>
+                </div>
+
+                <nav class="sidebar-menu">
+                    <button class="menu-item" onclick="location.href='dashboard.html'">📊 Dashboard Overview</button>
+                    <button class="menu-item" onclick="location.href='treatment.html'">💊 Treatment Plan</button>
+                    <button class="menu-item" onclick="location.href='lifestyle.html'">🏃 Lifestyle & Rules</button>
+                    <button class="menu-item active" onclick="location.href='settings.html'">⚙️ Settings</button>
+                </nav>
+            </div>
+
+            <button class="btn-logout" onclick="logout()">Sign Out</button>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+
+            <div class="top-bar">
+                <div>
+                    <h2>Patient Full Setup & Settings</h2>
+                    <p>Modify and update your baseline parameters, treatment regime, and preferences.</p>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top:20px; padding: 25px;">
+                <h3>⚙️ Edit All Setup Parameters</h3>
+
+                <form id="fullSettingsForm" class="settings-form" enctype="multipart/form-data"
+                    onsubmit="handleSettingsUpdate(event)">
+
+                    <!-- SECTION 1: Personal Profile & Photo -->
+                    <div class="settings-section-title">👤 Personal Profile & Photo</div>
+
+                    <div class="form-group full-width" style="flex-direction: row; align-items: center; gap: 20px;">
+                        <div id="previewBox" class="avatar-preview-box">--</div>
+                        <div>
+                            <label for="profileImage">Upload Profile Picture</label>
+                            <input type="file" id="profileImage" name="profileImage" accept="image/*"
+                                onchange="previewSelectedImage()">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fullName">Full Name</label>
+                        <input type="text" id="fullName" name="fullName" required placeholder="e.g. Maya Smith">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="age">Age</label>
+                        <input type="number" id="age" name="age" required placeholder="e.g. 55">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="gender">Gender / Sex</label>
+                        <select id="gender" name="gender" required>
+                            <option value="">Select Gender</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="weight">Weight (kg)</label>
+                        <input type="number" step="0.1" id="weight" name="weight" required placeholder="e.g. 75.5">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="height">Height (cm)</label>
+                        <input type="number" id="height" name="height" required placeholder="e.g. 165">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="hba1c">Recent HbA1c (%)</label>
+                        <input type="number" step="0.1" id="hba1c" name="hba1c" required placeholder="e.g. 7.8">
+                    </div>
+
+
+                    <!-- SECTION 2: Medical & Medication Plan Setup -->
+                    <div class="settings-section-title">💊 Medication & Clinical Regime</div>
+
+                    <div class="form-group">
+                        <label for="medicationType">Primary Treatment Type</label>
+                        <select id="medicationType" name="medicationType" required>
+                            <option value="Oral Medications Only">Oral Medications Only</option>
+                            <option value="Insulin Therapy">Insulin Therapy</option>
+                            <option value="GLP-1 Receptor Agonists">GLP-1 Receptor Agonists</option>
+                            <option value="Combination Therapy">Combination Therapy</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="medications">Specific Medication Details</label>
+                        <input type="text" id="medications" name="medications"
+                            placeholder="e.g. Metformin 1000mg twice daily, Ozempic 0.5mg">
+                    </div>
+
+                    <div class="form-group full-width checkbox-group">
+                        <input type="checkbox" id="hypoUnawareness" name="hypoUnawareness" value="1">
+                        <label for="hypoUnawareness" style="cursor:pointer;">Enable Hypoglycemia Unawareness Mode
+                            (Alerts on rapid drops)</label>
+                    </div>
+
+
+                    <!-- SECTION 3: Lifestyle & Guidance Guidelines -->
+                    <div class="settings-section-title">🏃 Lifestyle Factor & Target Rules</div>
+
+                    <div class="form-group">
+                        <label for="activityLevel">Activity Level (Pal Factor)</label>
+                        <select id="activityLevel" name="activityLevel">
+                            <option value="Sedentary (Little or no exercise)">Sedentary (Little or no exercise)</option>
+                            <option value="Lightly Active (1-3 days/week)">Lightly Active (1-3 days/week)</option>
+                            <option value="Moderately Active (3-5 days/week)">Moderately Active (3-5 days/week)</option>
+                            <option value="Very Active (6-7 days/week)">Very Active (6-7 days/week)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="targetGuideline">Target Glucose Guideline</label>
+                        <select id="targetGuideline" name="targetGuideline">
+                            <option value="NICE Guidelines (70 - 180 mg/dL)">NICE Guidelines (70 - 180 mg/dL)</option>
+                            <option value="ADA Guidelines (80 - 130 mg/dL Fasting)">ADA Guidelines (80 - 130 mg/dL
+                                Fasting)</option>
+                            <option value="Strict Tight Control (70 - 140 mg/dL)">Strict Tight Control (70 - 140 mg/dL)
+                            </option>
+                        </select>
+                    </div>
+
+
+                    <!-- Submit Action Button -->
+                    <div class="form-group full-width" style="margin-top: 15px;">
+                        <button type="submit" class="btn-action" style="padding: 14px; font-size: 15px;">Save & Update
+                            All Setup Data 💾</button>
+                    </div>
+
+                </form>
+            </div>
+
+        </main>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="dashboard.js"></script>
+    <script src="main.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            if (typeof loadSettingsData === 'function') {
+                loadSettingsData();
+            }
+        });
+
+        function logout() {
+            localStorage.removeItem('user_id');
+            localStorage.removeItem('patient_id');
+            window.location.href = 'signin.html';
+        }
+    </script>
+</body>
+
+</html>

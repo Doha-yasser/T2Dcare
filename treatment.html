@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>MedicDr T2D - Treatment Plan</title>
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="brand-logo">
+                <h2>🩺 T2D Care <span>T2D AI</span></h2>
+            </div>
+            <nav class="sidebar-menu">
+                <button class="menu-item" onclick="location.href='dashboard.html'">📊 Dashboard Overview</button>
+                <button class="menu-item active" onclick="location.href='treatment.html'">💊 Treatment Plan</button>
+                <button class="menu-item" onclick="location.href='lifestyle.html'">🏃 Lifestyle & Rules</button>
+                <button class="menu-item" onclick="location.href='settings.html'">⚙️ Settings</button>
+            </nav>
+            <button class="btn-logout" onclick="logout()">Sign Out</button>
+        </aside>
+
+        <main class="main-content">
+            <div class="top-bar">
+                <div>
+                    <h2>Medication & Treatment Schedule</h2>
+                    <p>Track your daily dosages and medication adherence.</p>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top:20px;">
+                <h3>💊 Active Medications</h3>
+                <div class="info-list-group" style="margin-top:15px;">
+                    <div class="info-item"><span>Metformin (Glucophage)</span><strong>1000 mg - Breakfast &
+                            Dinner</strong></div>
+                    <div class="info-item"><span>Ozempic (Semaglutide)</span><strong>0.5 mg - Once Weekly
+                            (Sunday)</strong></div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="dashboard.js"></script>
+</body>
+
+</html>

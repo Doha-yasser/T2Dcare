@@ -1,342 +1,471 @@
 import os
-from pathlib import Path
-from deep_translator import GoogleTranslator
-from dotenv import load_dotenv
+import sqlite3
 from flask import Flask, jsonify, request, send_from_directory
-import pandas as pd
-import requests
+from werkzeug.utils import secure_filename
 
-# =========================
-# LOAD ENVIRONMENT VARIABLES
-# =========================
+app = Flask(__name__, static_folder="../", template_folder="../")
 
-BASE_DIR = Path(__file__).resolve().parent
-ROOT_DIR = BASE_DIR.parent
-env_path = BASE_DIR / ".env"
-load_dotenv(dotenv_path=env_path)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, "database.db")
 
-
-# =========================
-# FLASK APP
-# =========================
-
-app = Flask(__name__, static_folder=str(ROOT_DIR), template_folder=str(ROOT_DIR), static_url_path="")
+# إعداد مجلد حفظ الصور المرفوعة
+UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
 
 
-# =========================
-# APIs CONFIG
-# =========================
-
-SPOONACULAR_API_KEY = os.getenv("SPOONACULAR_API_KEY")
-SPOONACULAR_SEARCH_URL = "https://api.spoonacular.com/recipes/complexSearch"
+def allowed_file(filename):
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-# =========================
-# LOAD EGYPTIAN CSV DATASET
-# =========================
+def init_db():
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
 
-csv_path = BASE_DIR / "egyptian food cleaned.csv"
+    # 1. جدول المستخدمين
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            email TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """
+    )
 
-try:
-    egyptian_df = pd.read_csv(csv_path)
-    egyptian_df.columns = egyptian_df.columns.str.strip()
-except Exception as e:
-    print("CSV Load Error:", e)
-    egyptian_df = pd.DataFrame()
+    # 2. جدول المرضى
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS patients (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER UNIQUE,
+            name TEXT,
+            age INTEGER,
+            gender TEXT,
+            weight REAL,
+            height REAL,
+            hba1c REAL,
+            medication_type TEXT,
+            medications TEXT,
+            hypo_unawareness INTEGER DEFAULT 0,
+            activity_level TEXT,
+            target_guideline TEXT,
+            image_path TEXT,
+            reading_fasting REAL,
+            reading_postmeal REAL,
+            reading_bedtime REAL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users (id)
+        )
+    """
+    )
 
+    # إضافة الأعمدة الجديدة في حال كانت قاعدة البيانات قديمة
+    new_columns = [
+        ("gender", "TEXT"),
+        ("hypo_unawareness", "INTEGER DEFAULT 0"),
+        ("activity_level", "TEXT"),
+        ("target_guideline", "TEXT"),
+        ("image_path", "TEXT"),
+    ]
 
-# =========================
-# DYNAMIC INGREDIENT ENGINE
-# =========================
+    for col_name, col_type in new_columns:
+        try:
+            cursor.execute(f"ALTER TABLE patients ADD COLUMN {col_name} {col_type};")
+        except sqlite3.OperationalError:
+            pass
 
-INGREDIENT_NUTRIENTS = {
-    "egg": {"calories": 75, "carbs": 0.5, "protein": 6.3, "fat": 5.0},
-    "yellow lentil": {"calories": -10, "carbs": -2.8, "protein": 1.5, "fat": -1.2},
-    "butter": {"calories": 100, "carbs": 0.0, "protein": 0.1, "fat": 11.0},
-    "ghee": {"calories": 112, "carbs": 0.0, "protein": 0.0, "fat": 12.7},
-    "cheese": {"calories": 80, "carbs": 0.8, "protein": 5.0, "fat": 6.5},
-    "nuts": {"calories": 90, "carbs": 3.0, "protein": 3.0, "fat": 8.0},
-    "cream": {"calories": 85, "carbs": 0.8, "protein": 0.6, "fat": 9.0},
-    "sugar": {"calories": 40, "carbs": 10.0, "protein": 0.0, "fat": 0.0},
-}
-
-def calculate_dynamic_nutrition(row, food_title):
-    """Calculates calories and macros dynamically to avoid repetition in Dataset."""
-    cal = float(row.get("calories_per_100g", 0) if pd.notna(row.get("calories_per_100g")) else 0)
-    fat = float(row.get("fats_per_100g", 0) if pd.notna(row.get("fats_per_100g")) else 0)
-    protein = float(row.get("protein_per_100g", 0) if pd.notna(row.get("protein_per_100g")) else 0)
-    carbs = float(row.get("carbs_per_100g", 0) if pd.notna(row.get("carbs_per_100g")) else 0)
-
-    ingredients = str(row.get("ingredients_en", "")).lower()
-    title_lower = str(food_title).lower()
-
-    for item, values in INGREDIENT_NUTRIENTS.items():
-        if item in ingredients or item in title_lower:
-            if item in ["egg", "yellow lentil"] and "koshari" in title_lower:
-                cal += values["calories"]
-                carbs += values["carbs"]
-                protein += values["protein"]
-                fat += values["fat"]
-
-    return max(0.0, cal), max(0.0, carbs), max(0.0, protein), max(0.0, fat)
-
-
-# =========================
-# T2D SMART SUBSTITUTIONS
-# =========================
-
-def get_smart_substitutions(ingredients_str, food_title):
-    """Healthy substitutions suggestions for diabetics."""
-    substitutions = []
-    ing_lower = str(ingredients_str).lower()
-    title_lower = str(food_title).lower()
-
-    if any(w in ing_lower or w in title_lower for w in ["sugar", "honey", "syrup", "milk"]):
-        if "rice with milk" in title_lower or "feteer" in title_lower:
-            substitutions.append({
-                "ingredient": "Added Sugar / Honey",
-                "replacement": "Stevia / Erythritol",
-                "cal_saved": 40,
-                "carbs_saved": 10.0,
-                "reason": "Prevents blood sugar spikes and eliminates added carbs."
-            })
-
-    if any(w in ing_lower or w in title_lower for w in ["fried", "ghee", "oil", "butter"]):
-        substitutions.append({
-            "ingredient": "Deep Frying / Butter",
-            "replacement": "Air Frying + Spray Olive Oil",
-            "cal_saved": 80,
-            "carbs_saved": 0.0,
-            "reason": "Reduces saturated fats and improves insulin sensitivity."
-        })
-
-    if any(w in ing_lower for w in ["pasta", "rice", "flour"]):
-        substitutions.append({
-            "ingredient": "White Carbs (Rice/Pasta/Flour)",
-            "replacement": "Brown Rice / Whole Wheat / Oats",
-            "cal_saved": 20,
-            "carbs_saved": 4.0,
-            "reason": "Rich in fiber which slows down glucose absorption."
-        })
-
-    return substitutions
+    conn.commit()
+    conn.close()
 
 
-# =========================
-# DIABETES ADVICE
-# =========================
-
-def generate_diabetes_advice(carbs, calories=0, fat=0, fiber=0):
-    """Generate diabetes-friendly advice based on carbohydrates, calories and fat."""
-    if carbs > 45:
-        return {
-            "status": "warning",
-            "badge": "⚠️ High Glycemic Impact",
-            "tip": "Very high in carbohydrates and sugars! Causes a rapid spike in blood sugar. Reduce portion size.",
-        }
-    elif carbs <= 30 and (calories > 600 or fat > 35):
-        return {
-            "status": "info",
-            "badge": "ℹ️ Low Carb / High Calorie",
-            "tip": "Low in carbohydrates, but rich in calories and fats! Consume a moderate portion.",
-        }
-    elif carbs <= 30:
-        return {
-            "status": "success",
-            "badge": "✅ Diabetes Friendly",
-            "tip": "Excellent and healthy choice! Low carbohydrate content with a balanced effect on blood sugar levels.",
-        }
-    else:
-        return {
-            "status": "info",
-            "badge": "ℹ️ Moderate Impact",
-            "tip": "Moderate carbohydrates. Ensure meal balance and control added starch intake.",
-        }
+init_db()
 
 
-# =========================
-# UTILS: EXTRACT IMAGE URL
-# =========================
-
-def extract_image_url(row):
-    """Extracts image URL from CSV if exists, otherwise returns empty string."""
-    for img_col in ["image", "image_url", "img", "picture"]:
-        if img_col in row and pd.notna(row[img_col]) and str(row[img_col]).strip():
-            return str(row[img_col]).strip()
-    return ""
-
-
-# =========================
-# HOME & CATEGORIES
-# =========================
-
+# --- Routes لتقديم الصفحات والملفات الثابتة ---
 @app.route("/")
 def home():
-    return send_from_directory(str(ROOT_DIR), "index.html")
-
-@app.route("/api/categories", methods=["GET"])
-def get_categories():
-    if not egyptian_df.empty:
-        cat_col = None
-        for col in ["main_category_en", "main_category_ar", "category"]:
-            if col in egyptian_df.columns:
-                cat_col = col
-                break
-        
-        if cat_col:
-            categories = egyptian_df[cat_col].dropna().astype(str).str.strip().unique().tolist()
-            categories = [c for c in categories if c and c.lower() != 'nan']
-            return jsonify({"categories": sorted(categories)})
-            
-    return jsonify({"categories": []})
+    return send_from_directory("../", "signin.html")
 
 
-# =========================
-# SEARCH FOODS (HYBRID SYSTEM)
-# =========================
+@app.route("/uploads/<path:filename>")
+def serve_uploads(filename):
+    return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
 
+
+@app.route("/<path:path>")
+def serve_static(path):
+    return send_from_directory("../", path)
+
+
+# --- API Endpoints ---
+
+# --- 1. APIs الأطعمة والنظام الغذائي (محدثة بمجموعات الـ Dataset) ---
 @app.route("/api/foods", methods=["GET"])
-def search_foods():
-    query = request.args.get("q", "").strip()
-    category = request.args.get("category", "").strip()
+def get_foods():
+    try:
+        search_query = request.args.get("search", "").strip().lower()
+        category = request.args.get("category", "").strip().lower()
 
-    if not query and not category:
-        return jsonify({"error": "Please enter a food name or choose a category."}), 400
+        # بيانات الأطعمة المتوافقة مع أقسام الـ Dataset
+        sample_foods = [
+            {
+                "id": 1,
+                "name": "Complete Green Salad Plate",
+                "category": "Salads",
+                "calories": 85,
+                "carbs": 8,
+                "sugar": 3,
+                "protein": 2,
+                "fat": 5,
+                "image": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=600&q=80",
+                "ingredients": ["Cucumber", "Tomatoes", "Lettuce", "Olive Oil", "Lemon"]
+            },
+            {
+                "id": 2,
+                "name": "Avocado Lemon Smoothie with Chia Seeds",
+                "category": "Beverages",
+                "calories": 160,
+                "carbs": 6,
+                "sugar": 1,
+                "protein": 2,
+                "fat": 14,
+                "image": "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=600&q=80",
+                "ingredients": ["Avocado", "Water", "Lemon Juice", "Chia Seeds"]
+            },
+            {
+                "id": 3,
+                "name": "Grilled Chicken Breast with Brown Rice",
+                "category": "Main Dishes",
+                "calories": 280,
+                "carbs": 22,
+                "sugar": 1,
+                "protein": 32,
+                "fat": 6,
+                "image": "https://images.unsplash.com/photo-1532550907401-a500c9a57435?auto=format&fit=crop&w=600&q=80",
+                "ingredients": ["Chicken Breast", "Brown Rice", "Olive Oil", "Cucumber"]
+            },
+            {
+                "id": 4,
+                "name": "Greek Yogurt with Natural Honey & Cinnamon",
+                "category": "Desserts",
+                "calories": 150,
+                "carbs": 12,
+                "sugar": 8,
+                "protein": 15,
+                "fat": 4,
+                "image": "https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=600&q=80",
+                "ingredients": ["Greek Yogurt", "Natural Honey", "Cinnamon", "Nuts"]
+            },
+            {"id": 5, "name": "Apple", "category": "Fruits", "calories": 52, "carbs": 14, "sugar": 10, "protein": 0.3, "fat": 0.2, "ingredients": ["Apple"]},
+            {"id": 6, "name": "Oats Meal", "category": "Grains", "calories": 389, "carbs": 66, "sugar": 1, "protein": 16.9, "fat": 6.9, "ingredients": ["Oats", "Water"]},
+            {"id": 7, "name": "Boiled Egg", "category": "Protein", "calories": 155, "carbs": 1.1, "sugar": 1.1, "protein": 13, "fat": 11, "ingredients": ["Egg"]},
+            {"id": 8, "name": "Fresh Spinach Salad", "category": "Vegetables", "calories": 23, "carbs": 3.6, "sugar": 0.4, "protein": 2.9, "fat": 0.4, "ingredients": ["Spinach"]}
+        ]
 
-    # ==========================================
-    # 1. SEARCH EGYPTIAN CSV
-    # ==========================================
-    if not egyptian_df.empty:
-        df_clean = egyptian_df.copy()
+        filtered_foods = sample_foods
 
-        # Dynamic Category Column Check
-        cat_col = None
-        for col in ["main_category_en", "main_category_ar", "category"]:
-            if col in df_clean.columns:
-                cat_col = col
-                break
+        # التصفية حسب القسم
+        if category and category != "all":
+            filtered_foods = [f for f in filtered_foods if f["category"].lower() == category]
 
-        # Filter by category if selected
-        if category and cat_col:
-            df_clean = df_clean[df_clean[cat_col].astype(str).str.strip().str.casefold() == category.casefold()]
+        # التصفية حسب كلمة البحث
+        if search_query:
+            filtered_foods = [f for f in filtered_foods if search_query in f["name"].lower()]
 
-        if not query:
-            matches = df_clean.head(10).copy()
-            matches["match_type"] = "direct"
-        else:
-            ar_col = "food_name_ar" if "food_name_ar" in df_clean.columns else df_clean.columns[0]
-            en_col = "food_name_en" if "food_name_en" in df_clean.columns else df_clean.columns[0]
+        return jsonify({"status": "success", "foods": filtered_foods}), 200
 
-            name_mask = (
-                df_clean[ar_col].astype(str).str.contains(query, case=False, na=False) |
-                df_clean[en_col].astype(str).str.contains(query, case=False, na=False)
-            )
-            exact_matches = df_clean[name_mask].copy()
-            if not exact_matches.empty:
-                exact_matches["match_type"] = "direct"
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
-            ing_mask = pd.Series(False, index=df_clean.index)
-            if "ingredients_en" in df_clean.columns:
-                ing_mask = df_clean["ingredients_en"].astype(str).str.contains(query, case=False, na=False) & (~name_mask)
 
-            ing_matches = df_clean[ing_mask].copy()
-            if not ing_matches.empty:
-                ing_matches["match_type"] = "ingredient"
+@app.route("/api/foods/categories", methods=["GET"])
+def get_food_categories():
+    # الأقسام الشاملة للـ Dataset (وجبات جاهزة + مكونات أساسية)
+    categories = [
+        "Salads",
+        "Main Dishes",
+        "Beverages",
+        "Desserts",
+        "Fruits",
+        "Grains",
+        "Protein",
+        "Dairy",
+        "Vegetables",
+        "Nuts",
+        "Snacks"
+    ]
+    return jsonify({"status": "success", "categories": categories}), 200
 
-            matches = pd.concat([exact_matches, ing_matches])
 
-        if not matches.empty:
-            results = []
-            for idx, (_, row) in enumerate(matches.head(8).iterrows()):
-                food_title = row.get("food_name_en" if "food_name_en" in row else row.index[0], query)
-                image_url = extract_image_url(row)
-                match_type = row.get("match_type", "direct")
+# --- 2. APIs الحسابات والمرضى ---
+@app.route("/api/register", methods=["POST"])
+def register():
+    try:
+        data = request.get_json() or {}
+        email = data.get("email", "").strip().lower()
+        password = data.get("password", "").strip()
 
-                calories, carbs, protein, fat = calculate_dynamic_nutrition(row, food_title)
-                advice = generate_diabetes_advice(carbs=carbs, calories=calories, fat=fat)
-                substitutions = get_smart_substitutions(row.get("ingredients_en", ""), food_title)
+        if not email or not password:
+            return jsonify({"status": "error", "message": "يرجى إدخال البريد الإلكتروني وكلمة السر"}), 400
 
-                category_val = str(row.get(cat_col, "General")) if cat_col else "General"
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
 
-                results.append({
-                    "id": int(row.get("food_id", idx)),
-                    "description": food_title,
-                    "category": category_val,
-                    "image": image_url,
-                    "calories": round(calories),
-                    "carbs": round(carbs, 1),
-                    "protein": round(protein, 1),
-                    "fat": round(fat, 1),
-                    "match_type": match_type,
-                    "ingredient_note": f"Contains '{query}' in ingredients" if match_type == "ingredient" else "",
-                    "advice": advice,
-                    "substitutions": substitutions
-                })
-
-            if results:
-                return jsonify({"foods": results})
-
-    # ==========================================
-    # 2. FALLBACK TO SPOONACULAR API
-    # ==========================================
-    if SPOONACULAR_API_KEY and query:
         try:
-            try:
-                translated_query = GoogleTranslator(source="auto", target="en").translate(query)
-            except Exception:
-                translated_query = query
+            cursor.execute("INSERT INTO users (email, password) VALUES (?, ?)", (email, password))
+            conn.commit()
+            user_id = cursor.lastrowid
+            conn.close()
 
-            params = {
-                "apiKey": SPOONACULAR_API_KEY,
-                "query": translated_query,
-                "number": 6,
-                "addRecipeNutrition": "true",
-            }
+            return jsonify({
+                "status": "success",
+                "message": "تم إنشاء الحساب بنجاح",
+                "user_id": user_id,
+                "redirect": "/setup.html",
+            }), 201
 
-            res = requests.get(SPOONACULAR_SEARCH_URL, params=params, timeout=8)
+        except sqlite3.IntegrityError:
+            conn.close()
+            return jsonify({"status": "error", "message": "هذا البريد الإلكتروني مُسجل بالفعل!"}), 400
 
-            if res.status_code == 200:
-                data = res.json().get("results", [])
-                formatted_foods = []
-
-                for item in data:
-                    nutrients_list = item.get("nutrition", {}).get("nutrients", [])
-                    nutrients = {n["name"]: n["amount"] for n in nutrients_list}
-
-                    carbs = nutrients.get("Carbohydrates", 0)
-                    calories = nutrients.get("Calories", 0)
-                    fat = nutrients.get("Fat", 0)
-                    fiber = nutrients.get("Fiber", 0)
-                    protein = nutrients.get("Protein", 0)
-
-                    formatted_foods.append({
-                        "id": item.get("id"),
-                        "description": item.get("title"),
-                        "image": item.get("image", ""),
-                        "calories": round(calories),
-                        "carbs": round(carbs, 1),
-                        "protein": round(protein, 1),
-                        "fat": round(fat, 1),
-                        "match_type": "direct",
-                        "ingredient_note": "",
-                        "advice": generate_diabetes_advice(carbs, calories, fat, fiber),
-                        "substitutions": []
-                    })
-
-                return jsonify({"foods": formatted_foods})
-
-            else:
-                print("Spoonacular status:", res.status_code)
-
-        except Exception as e:
-            print("Spoonacular Error:", e)
-
-    return jsonify({"foods": []})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 
-# =========================
-# RUN APP
-# =========================
+@app.route("/api/login", methods=["POST"])
+def login():
+    try:
+        data = request.get_json() or {}
+        email = data.get("email", "").strip().lower()
+        password = data.get("password", "").strip()
+
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+
+        user = cursor.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
+
+        if not user:
+            conn.close()
+            return jsonify({
+                "status": "error",
+                "code": "USER_NOT_FOUND",
+                "message": "هذا الحساب غير موجود! يرجى إنشاء حساب جديد.",
+            }), 404
+
+        if user["password"] != password:
+            conn.close()
+            return jsonify({
+                "status": "error",
+                "code": "WRONG_PASSWORD",
+                "message": "كلمة السر غير صحيحة! يرجى التأكد وإعادة المحاولة.",
+            }), 401
+
+        user_id = user["id"]
+        patient = cursor.execute("SELECT * FROM patients WHERE user_id = ?", (user_id,)).fetchone()
+        conn.close()
+
+        return jsonify({
+            "status": "success",
+            "message": "تم تسجيل الدخول بنجاح",
+            "user_id": user_id,
+            "patient_id": patient["id"] if patient else None,
+            "has_setup": True if patient else False,
+            "redirect": "/dashboard.html" if patient else "/setup.html",
+        }), 200
+
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+@app.route("/api/user/status/<int:user_id>", methods=["GET"])
+def check_user_status(user_id):
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        patient = cursor.execute("SELECT id FROM patients WHERE user_id = ?", (user_id,)).fetchone()
+        conn.close()
+
+        if patient:
+            return jsonify({"has_setup": True, "redirect": "/dashboard.html"})
+        else:
+            return jsonify({"has_setup": False, "redirect": "/setup.html"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+@app.route("/api/patient/setup", methods=["POST"])
+def save_patient_setup():
+    try:
+        data = request.get_json() or {}
+        user_id = data.get("user_id")
+
+        if not user_id:
+            return jsonify({"status": "error", "message": "User ID is required"}), 400
+
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+
+        cursor.execute(
+            """
+            INSERT OR REPLACE INTO patients 
+            (user_id, name, age, gender, weight, height, hba1c, medication_type, medications, reading_fasting, reading_postmeal, reading_bedtime)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+            (
+                user_id,
+                data.get("fullName"),
+                data.get("age"),
+                data.get("gender"),
+                data.get("weight"),
+                data.get("height"),
+                data.get("hba1c"),
+                data.get("medicationType"),
+                data.get("medications"),
+                data.get("reading1"),
+                data.get("reading2"),
+                data.get("reading3"),
+            ),
+        )
+
+        conn.commit()
+        conn.close()
+
+        return jsonify({
+            "status": "success",
+            "message": "تم حفظ البيانات بنجاح",
+            "redirect": "/dashboard.html",
+        }), 200
+
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+@app.route("/api/patient/profile/<int:user_id>", methods=["GET"])
+def get_patient_profile(user_id):
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+
+        patient = cursor.execute("SELECT * FROM patients WHERE user_id = ?", (user_id,)).fetchone()
+        conn.close()
+
+        if not patient:
+            return jsonify({"status": "error", "message": "Patient profile not found"}), 404
+
+        p = dict(patient)
+        response_data = {
+            "fullName": p.get("name"),
+            "name": p.get("name"),
+            "age": p.get("age"),
+            "gender": p.get("gender"),
+            "weight": p.get("weight"),
+            "height": p.get("height"),
+            "hba1c": p.get("hba1c"),
+            "medicationType": p.get("medication_type"),
+            "medications": p.get("medications"),
+            "hypo_unawareness": p.get("hypo_unawareness"),
+            "activity_level": p.get("activity_level"),
+            "target_guideline": p.get("target_guideline"),
+            "image_path": p.get("image_path"),
+            "reading_fasting": p.get("reading_fasting"),
+            "reading_postmeal": p.get("reading_postmeal"),
+            "reading_bedtime": p.get("reading_bedtime"),
+        }
+
+        return jsonify({"status": "success", "profile": response_data}), 200
+
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+@app.route("/api/patient/settings/<int:user_id>", methods=["GET"])
+def get_patient_settings(user_id):
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+
+        patient = cursor.execute("SELECT * FROM patients WHERE user_id = ?", (user_id,)).fetchone()
+        conn.close()
+
+        if not patient:
+            return jsonify({"status": "error", "message": "Settings not found"}), 404
+
+        return jsonify({"status": "success", "patient": dict(patient)}), 200
+
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+@app.route("/api/patient/update", methods=["POST"])
+def update_patient_data():
+    try:
+        user_id = request.form.get("user_id")
+        if not user_id:
+            return jsonify({"status": "error", "message": "User ID is required"}), 400
+
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+
+        current_patient = cursor.execute("SELECT image_path FROM patients WHERE user_id = ?", (user_id,)).fetchone()
+        image_path = current_patient[0] if current_patient else None
+
+        if "profileImage" in request.files:
+            file = request.files["profileImage"]
+            if file and allowed_file(file.filename):
+                filename = secure_filename(f"user_{user_id}_{file.filename}")
+                file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
+                image_path = f"/uploads/{filename}"
+
+        hypo_unawareness = 1 if request.form.get("hypoUnawareness") in ["1", "true", "on"] else 0
+
+        cursor.execute(
+            """
+            UPDATE patients SET
+                name = ?,
+                age = ?,
+                gender = ?,
+                weight = ?,
+                height = ?,
+                hba1c = ?,
+                medication_type = ?,
+                medications = ?,
+                hypo_unawareness = ?,
+                activity_level = ?,
+                target_guideline = ?,
+                image_path = COALESCE(?, image_path)
+            WHERE user_id = ?
+        """,
+            (
+                request.form.get("fullName"),
+                request.form.get("age"),
+                request.form.get("gender"),
+                request.form.get("weight"),
+                request.form.get("height"),
+                request.form.get("hba1c"),
+                request.form.get("medicationType"),
+                request.form.get("medications"),
+                hypo_unawareness,
+                request.form.get("activityLevel"),
+                request.form.get("targetGuideline"),
+                image_path,
+                user_id,
+            ),
+        )
+
+        conn.commit()
+        conn.close()
+
+        return jsonify({"status": "success", "message": "تم تحديث البيانات بنجاح"}), 200
+
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=5000, debug=True)
+    app.run(debug=True, port=5000)
