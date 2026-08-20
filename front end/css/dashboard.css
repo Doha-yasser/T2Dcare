@@ -1,0 +1,432 @@
+/* ==========================================================
+   T2D Care AI - Soft Medical UI/UX Theme (Pastel Mint)
+   ========================================================== */
+   :root {
+    /* Main Soft Backgrounds */
+    --bg-main: #eef7f6;
+    --card-bg: #ffffff;
+    --sidebar-bg: #0b3c3e;
+    --sidebar-hover: #134e50;
+
+    /* Primary Accent Colors */
+    --primary-teal: #0d6e6e;
+    --primary-teal-hover: #095252;
+    --accent-mint: #e2f2ef;
+
+    /* Soft Pastel Badges & Stat Backgrounds */
+    --badge-yellow: #fff3d6;
+    --badge-yellow-text: #8a6200;
+
+    --badge-pink: #ffebee;
+    --badge-pink-text: #c62828;
+
+    --badge-green: #e8f5e9;
+    --badge-green-text: #2e7d32;
+
+    --badge-teal: #e2f2ef;
+    --badge-teal-text: #0d6e6e;
+
+    /* Typography & Boundaries */
+    --text-dark: #123335;
+    --text-body: #375253;
+    --text-muted: #6e8e8f;
+    --border-color: #d8eae7;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+body {
+    background-color: var(--bg-main);
+    color: var(--text-body);
+}
+
+.app-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Sidebar Layout */
+.sidebar {
+    width: 260px;
+    background-color: var(--sidebar-bg);
+    padding: 30px 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.brand-logo h2 {
+    color: #ffffff;
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+
+.brand-logo span {
+    color: #a3e8df;
+    font-size: 0.75rem;
+    background: rgba(163, 232, 223, 0.15);
+    padding: 3px 8px;
+    border-radius: 8px;
+    margin-left: 5px;
+    border: 1px solid rgba(163, 232, 223, 0.2);
+}
+
+.profile-card-mini {
+    text-align: center;
+    margin: 25px 0;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.avatar-circle {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    background: #a3e8df;
+    color: var(--sidebar-bg);
+    font-size: 1.4rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 10px;
+}
+
+.profile-card-mini h4 {
+    color: #ffffff;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.profile-card-mini p {
+    color: #8bb2b0;
+    font-size: 0.8rem;
+    margin-top: 3px;
+}
+
+.sidebar-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* style.css has a generic `nav { background: white; height: 82px;
+   padding: 0 7%; ...}` rule meant for the site's top navbar. Since our
+   sidebar menu is also literally a <nav> element, that rule leaks in here
+   too (tag selectors apply to every matching element). We override every
+   property it sets, using a selector specific enough (.sidebar .sidebar-menu)
+   to reliably beat a plain `nav` tag selector regardless of stylesheet order. */
+.sidebar .sidebar-menu {
+    background: transparent;
+    height: auto;
+    padding: 0;
+    margin: 0;
+    border-bottom: none;
+    align-items: stretch;
+    justify-content: flex-start;
+}
+
+.menu-item {
+    background: transparent;
+    border: none;
+    color: #8bb2b0;
+    padding: 12px 16px;
+    border-radius: 12px;
+    text-align: left;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.menu-item.active,
+.menu-item:hover {
+    background: var(--sidebar-hover);
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.btn-logout {
+    background: var(--badge-pink);
+    color: var(--badge-pink-text);
+    border: 1px solid rgba(198, 40, 40, 0.2);
+    padding: 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+}
+
+.btn-logout:hover {
+    background: #ffcdd2;
+}
+
+/* Main Content Area */
+.main-content {
+    flex: 1;
+    padding: 32px;
+    overflow-y: auto;
+}
+
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.top-bar h2 {
+    font-size: 1.5rem;
+    color: var(--text-dark);
+    font-weight: 700;
+}
+
+.top-bar p {
+    color: var(--text-muted);
+    font-size: 0.88rem;
+    margin-top: 2px;
+}
+
+.search-bar input {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    padding: 11px 20px;
+    border-radius: 25px;
+    width: 280px;
+    font-size: 0.85rem;
+    outline: none;
+    color: var(--text-dark);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+}
+
+.search-bar input:focus {
+    border-color: var(--primary-teal);
+}
+
+/* Top Metric Cards Row */
+.metrics-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-bottom: 25px;
+}
+
+.stat-box {
+    background: var(--card-bg);
+    padding: 18px 20px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.015);
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+}
+
+/* Unified Theme Icons (Replaced Blue & Purple with Mint & Pastel Teal) */
+.stat-icon.theme-icon,
+.stat-icon.blue,
+.stat-icon.purple {
+    background: var(--accent-mint);
+    color: var(--primary-teal);
+}
+
+.stat-icon.green {
+    background: var(--badge-green);
+    color: var(--badge-green-text);
+}
+
+.stat-icon.orange {
+    background: var(--badge-yellow);
+    color: var(--badge-yellow-text);
+}
+
+.stat-info p {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+
+.stat-info h3 {
+    font-size: 1.25rem;
+    color: var(--text-dark);
+    margin-top: 2px;
+    font-weight: 700;
+}
+
+/* Grid Layout */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 25px;
+}
+
+.card {
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 24px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.015);
+    margin-bottom: 25px;
+    min-height: auto; /* style.css's .card sets min-height:230px for the homepage
+                          feature cards; this is shared via the same class name,
+                          so we explicitly reset it here for the dashboard cards */
+}
+
+.card-title {
+    font-size: 1.02rem;
+    color: var(--text-dark);
+    margin-bottom: 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 700;
+}
+
+/* Badges Styling */
+.badge-status {
+    background: var(--badge-green);
+    color: var(--badge-green-text);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.theme-badge,
+.blue-badge {
+    background: var(--badge-teal);
+    color: var(--badge-teal-text);
+    border: 1px solid rgba(13, 110, 110, 0.15);
+}
+
+/* Meal Input Box Styling */
+.meal-input-box {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.meal-input-box input {
+    flex: 1;
+    padding: 12px 18px;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    outline: none;
+    background: var(--bg-main);
+    font-size: 0.9rem;
+    color: var(--text-dark);
+}
+
+.meal-input-box input:focus {
+    border-color: var(--primary-teal);
+    background: #ffffff;
+}
+
+.btn-action {
+    background: var(--primary-teal);
+    color: #ffffff;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: background 0.2s;
+}
+
+.btn-action:hover {
+    background: var(--primary-teal-hover);
+}
+
+.nutrients-inline {
+    display: flex;
+    justify-content: space-around;
+    background: var(--bg-main);
+    padding: 14px;
+    border-radius: 14px;
+    border: 1px solid var(--border-color);
+    text-align: center;
+}
+
+.nut-cell span {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    display: block;
+}
+
+.nut-cell strong {
+    font-size: 1.05rem;
+    color: var(--text-dark);
+    margin-top: 2px;
+}
+
+.chart-wrapper {
+    position: relative;
+    height: 250px;
+}
+
+/* AI Smart Insight Box */
+.ai-insight-card {
+    background: var(--accent-mint);
+    border: 1px solid var(--border-color);
+    color: var(--text-dark);
+    border-radius: 20px;
+    padding: 22px;
+}
+
+.ai-insight-card h3 {
+    font-size: 1.05rem;
+    margin-bottom: 10px;
+    color: var(--primary-teal);
+    font-weight: 700;
+}
+
+.ai-insight-card p {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--text-body);
+}
+
+/* Right Column Lists */
+.info-list-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.88rem;
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-item span {
+    color: var(--text-muted);
+}
+
+.info-item strong {
+    color: var(--text-dark);
+    font-weight: 600;
+}

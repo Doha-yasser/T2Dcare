@@ -1,0 +1,165 @@
+<!doctype html>
+
+<html lang="en">
+
+  <head>
+
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>T2D Care - AI Assistant</title>
+
+    <link rel="stylesheet" href="../css/chat_style.css" />
+
+    <link rel="stylesheet" href="../css/style.css" />
+
+    <script>
+
+      (function () {
+
+        var saved = localStorage.getItem("t2d-theme");
+
+        if (saved === "dark") document.documentElement.setAttribute("data-theme", "dark");
+
+      })();
+
+    </script>
+
+  </head>
+
+  <body>
+
+    <!-- Top nav -->
+
+    <nav>
+
+        <div class="logo">
+
+            <div class="logo-icon">♡</div>
+
+            <div class="logo-text">
+
+                <h2>T2D Care</h2>
+
+                <span>TYPE 2 DIABETES CARE</span>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="nav-links">
+
+            <a href="index.html">Home</a>
+
+            <a href="healthy_food.html">Explore</a>
+
+            <a href="dashboard.html">Dashboard</a>
+
+            <a href="pipeline.html">Pipeline</a>
+
+            <a href="about.html">About</a>
+
+            <a href="profile.html">Profile</a>
+
+            <button id="themeToggle" class="theme-toggle" type="button" role="switch" aria-checked="false" aria-label="Toggle dark mode">
+
+                <span class="toggle-knob"></span>
+
+            </button>
+
+            <a class="ask-btn" href="chat.html">💬 Ask Assistant</a>
+
+        </div>
+
+    </nav>
+
+
+
+    <!-- Chat card -->
+
+    <main class="page-wrap">
+
+      <div class="chat-card">
+
+        <div class="chat-card-header">
+
+          <span class="chat-icon">💬</span>
+
+          <h2>AI Assistant</h2>
+
+        </div>
+
+
+
+        <div id="chat-window" class="chat-window">
+
+          <div class="message bot">
+
+            <div class="bubble">Hi! Ask me anything about Type 2 diabetes management based on the NICE guideline.
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+
+        <div class="chat-input-area">
+
+          <input
+
+            type="text"
+
+            id="user-input"
+
+            placeholder="Type your message..."
+
+            autocomplete="off"
+
+          />
+
+          <button id="voice-btn" aria-label="Voice input" type="button"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="1" width="6" height="12" rx="3"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button>
+
+          <button id="send-btn" aria-label="Send">➤</button>
+
+        </div>
+
+      </div>
+
+    </main>
+
+
+
+    <!-- Pipeline modal -->
+
+    <div id="pipeline-overlay" class="pipeline-overlay hidden">
+
+      <div class="pipeline-modal">
+
+        <div class="pipeline-header">
+
+          <h2>Response Pipeline</h2>
+
+          <button id="pipeline-close" class="pipeline-close">✕</button>
+
+        </div>
+
+        <div id="pipeline-steps" class="pipeline-steps"></div>
+
+      </div>
+
+    </div>
+
+
+
+    <script src="../js/script.js"></script>
+
+    <script src="../js/chat.js"></script>
+
+  </body>
+
+</html>

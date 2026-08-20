@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>About — T2D Care</title>
+
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/about.css" />
+    <script>
+      (function () {
+        var saved = localStorage.getItem("t2d-theme");
+        if (saved === "dark") document.documentElement.setAttribute("data-theme", "dark");
+      })();
+    </script>
+  </head>
+
+  <body>
+    <!-- =========================
+         NAVIGATION
+    ========================== -->
+
+    <nav>
+      <div class="logo">
+        <div class="logo-icon">♡</div>
+
+        <div class="logo-text">
+          <h2>T2D Care</h2>
+
+          <span> TYPE 2 DIABETES CARE </span>
+        </div>
+      </div>
+
+      <div class="nav-links">
+        <a href="index.html"> Home </a>
+
+        <a href="healthy_food.html"> Explore </a>
+
+        <a href="dashboard.html"> Dashboard </a>
+
+        <a href="pipeline.html"> Pipeline </a>
+
+        <a href="about.html"> About </a>
+
+        <a href="profile.html"> Profile </a>
+
+        <button id="themeToggle" class="theme-toggle" type="button" role="switch" aria-checked="false" aria-label="Toggle dark mode">
+          <span class="toggle-knob"></span>
+        </button>
+
+        <a class="ask-btn" href="chat.html"> 💬 Ask Assistant </a>
+      </div>
+    </nav>
+
+    <!-- =========================
+         ABOUT SECTION
+    ========================== -->
+
+    <main class="about-page">
+      <div class="about-header">
+        <h1>About Type 2 Diabetes</h1>
+        <p class="about-subtitle">
+          What Type 2 diabetes is, and how T2D Care uses NICE guidance to
+          support your understanding.
+        </p>
+      </div>
+
+      <section class="about-block">
+        <h2>What is Type 2 diabetes?</h2>
+        <p>
+          Type 2 diabetes is a long-term condition in which the body does not
+          use insulin properly, leading to higher-than-normal blood glucose
+          (sugar) levels. Over time, unmanaged blood glucose can affect the
+          heart, kidneys, eyes, nerves, and feet, which is why ongoing,
+          individualised care is important.
+        </p>
+      </section>
+
+      <section class="about-block">
+        <h2>How T2D Care works</h2>
+        <p>
+          T2D Care is an educational tool. Its AI Assistant answers questions
+          using content drawn directly from the NICE guideline NG28 —
+          <a
+            href="https://www.nice.org.uk/guidance/ng28"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Type 2 diabetes in adults: management </a
+          >. It is designed to help you understand recommendations, not to
+          diagnose you or replace a consultation with a qualified healthcare
+          professional.
+        </p>
+      </section>
+
+      <section class="about-block disclaimer-block">
+        <h2>Important</h2>
+        <p>
+          T2D Care does not prescribe or recommend specific medicines or
+          dosages. Any decisions about starting, stopping, or changing
+          medication should always be made with a doctor or another qualified
+          healthcare professional. In an emergency, seek immediate medical care.
+        </p>
+      </section>
+
+      <!-- =========================
+             TEAM
+        ========================== -->
+
+      <section class="team-section">
+        <h2 class="section-title">Our Team</h2>
+
+        <p class="section-subtitle">The team behind T2D Care.</p>
+
+        <div class="team-grid">
+          <div class="team-card">
+            <div class="team-avatar">👩‍💻</div>
+            <h3>Maya Maged</h3>
+            <p>
+              Faculty of Engineering, Computer Engineering Department,<br />Egypt
+              Japan University
+            </p>
+          </div>
+
+          <div class="team-card">
+            <div class="team-avatar">👩‍💻</div>
+            <h3>Doha Yasser</h3>
+            <p>
+              Faculty of Computer Science and Artificial Intelligence,<br />Cairo
+              University
+            </p>
+          </div>
+
+          <div class="team-card">
+            <div class="team-avatar">👩‍💻</div>
+            <h3>Hoda Tammer</h3>
+            <p>
+              Faculty of Engineering, Computer Engineering Department, Egypt
+              Japan University
+            </p>
+          </div>
+
+          <div class="team-card">
+            <div class="team-avatar">👩‍💻</div>
+            <h3>Mariam Khaled</h3>
+            <p>October Technological University - IT</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- =========================
+         FOOTER
+    ========================== -->
+
+    <footer>
+      <p>T2D Care © 2026</p>
+
+      <p style="margin-top: 8px">
+        Educational guidance based on NICE NG28 — Type 2 diabetes in adults:
+        management.
+      </p>
+    </footer>
+
+    <script src="../js/script.js"></script>
+  </body>
+</html>

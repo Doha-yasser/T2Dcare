@@ -1,0 +1,238 @@
+/* ==========================================
+   AUTH PAGE ONLY (auth.css)
+========================================== */
+
+/* 1️⃣ KEYFRAMES (الحركات والانزلاقات) */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes floatImage {
+
+    0%,
+    100% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+/* حركة دخول منطقة الصورة من الشمال */
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-80px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* حركة دخول منطقة الكتابة والفورم من اليمين */
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(80px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* 2️⃣ CONTAINER & LAYOUT STRUCTURE */
+body,
+html {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow-x: hidden;
+}
+
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    min-height: 100vh;
+    padding: 20px;
+    box-sizing: border-box;
+    background-color: #f1f5f9;
+}
+
+.auth-card-split {
+    display: flex;
+    background: #ffffff;
+    width: 60%;
+    /* FIX: was a fixed `height: 65vh` + `overflow: hidden`, which clipped
+       the tabs and submit button whenever the form content was taller
+       than 65% of the viewport. Now the card grows to fit its content
+       instead of cutting it off, with sensible min/max bounds. */
+    height: auto;
+    min-height: 65vh;
+    max-height: 92vh;
+    border-radius: 24px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.12);
+    animation: fadeInUp 0.5s ease-out;
+}
+
+/* 3️⃣ LEFT SIDE: IMAGE SECTION (Slide In From Left) */
+.auth-image-side {
+    flex: 1.2;
+    background: linear-gradient(135deg, #f0fdf4 0%, #e6f4f1 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    text-align: center;
+    border-right: 1px solid #e2e8f0;
+    /* FIX: rounded corners now live on this element directly (instead of
+       relying on overflow:hidden on the parent), so removing that
+       overflow rule above doesn't square off the card's left corners. */
+    border-top-left-radius: 24px;
+    border-bottom-left-radius: 24px;
+    animation: slideInLeft 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+.auth-image-side img {
+    max-width: 90%;
+    height: auto;
+    max-height: 480px;
+    object-fit: contain;
+    animation: floatImage 4s ease-in-out infinite;
+}
+
+.image-overlay-text h3 {
+    margin-top: 25px;
+    color: #0d9488;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.image-overlay-text p {
+    color: #64748b;
+    font-size: 16px;
+    margin-top: 10px;
+    line-height: 1.6;
+}
+
+/* 4️⃣ RIGHT SIDE: FORM SECTION (Slide In From Right) */
+.auth-form-side {
+    flex: 1;
+    padding: 50px 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    /* FIX: rounded corners for the right half, matching the left half
+       above, now that the parent no longer clips with overflow:hidden. */
+    border-top-right-radius: 24px;
+    border-bottom-right-radius: 24px;
+    /* FIX: if content ever exceeds max-height on a very short screen,
+       scroll within this side rather than clipping the button off. */
+    overflow-y: auto;
+    animation: slideInRight 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+.auth-form {
+    animation: slideInRight 0.4s ease-out;
+}
+
+.auth-form h2 {
+    margin: 0 0 10px 0;
+    color: #0d9488;
+    font-size: 32px;
+    font-weight: 700;
+}
+
+.auth-form p {
+    color: #64748b;
+    font-size: 16px;
+    margin-bottom: 30px;
+}
+
+/* 5️⃣ TABS & INPUTS */
+.auth-tabs {
+    display: flex;
+    margin-bottom: 30px;
+    border-bottom: 2px solid #edf2f7;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 12px;
+    background: none;
+    border: none;
+    font-size: 17px;
+    font-weight: 600;
+    color: #718096;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.tab-btn.active {
+    color: #0d9488;
+    border-bottom-color: #0d9488;
+}
+
+.form-group {
+    margin-bottom: 22px;
+}
+
+.form-group label {
+    font-size: 15px;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 16px;
+    border: 1px solid #cbd5e0;
+    border-radius: 12px;
+    font-size: 16px;
+    box-sizing: border-box;
+    outline: none;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-group input:focus {
+    border-color: #0d9488;
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
+}
+
+.btn-primary {
+    width: 100%;
+    padding: 16px;
+    background: #0d9488;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 17px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 15px;
+    transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.btn-primary:hover {
+    background: #0f766e;
+    transform: translateY(-2px);
+}

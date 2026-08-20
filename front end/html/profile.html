@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Profile · T2D Care</title>
+    <link rel="stylesheet" href="../css/style.css" />
+    <script>
+      (function () {
+        var saved = localStorage.getItem("t2d-theme");
+        if (saved === "dark") document.documentElement.setAttribute("data-theme", "dark");
+      })();
+    </script>
+  </head>
+
+  <body>
+
+    <nav>
+      <div class="logo">
+        <div class="logo-icon">♡</div>
+        <div class="logo-text">
+          <h2>T2D Care</h2>
+          <span>TYPE 2 DIABETES CARE</span>
+        </div>
+      </div>
+
+      <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="healthy_food.html">Explore</a>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="pipeline.html">Pipeline</a>
+        <a href="about.html">About</a>
+        <a href="profile.html">Profile</a>
+        <button id="themeToggle" class="theme-toggle" type="button" role="switch" aria-checked="false" aria-label="Toggle dark mode">
+            <span class="toggle-knob"></span>
+        </button>
+        <a class="ask-btn" href="chat.html">💬 Ask Assistant</a>
+    </div>
+    </nav>
+
+    <section class="profile-page">
+
+      <!-- Profile header with avatar centered -->
+      <div class="profile-hero">
+        <div class="profile-avatar-wrap">
+          <div class="profile-avatar" id="profileAvatar">🧑</div>
+          <label class="avatar-edit-btn" for="photoInput" title="Change photo">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+          </label>
+          <input type="file" id="photoInput" accept="image/*" style="display:none" />
+        </div>
+        <h1 id="profileDisplayName">Your Profile</h1>
+        <p class="profile-tagline">Manage your details to personalize your AI Assistant experience</p>
+        <button type="button" class="profile-remove-photo" id="removePhotoBtn">Remove photo</button>
+      </div>
+
+      <!-- Form card -->
+      <div class="profile-card">
+        <form id="profileForm">
+
+          <div class="profile-section-title">Personal Information</div>
+
+          <div class="profile-form-grid">
+            <div class="profile-field">
+              <label for="fullName">Full Name</label>
+              <input type="text" id="fullName" placeholder="e.g. Sara Ahmed" autocomplete="name" />
+            </div>
+
+            <div class="profile-field">
+              <label for="email">Email</label>
+              <input type="email" id="email" placeholder="you@example.com" autocomplete="email" />
+            </div>
+
+            <div class="profile-field">
+              <label for="age">Age</label>
+              <input type="number" id="age" min="0" max="120" placeholder="e.g. 45" />
+            </div>
+
+          </div>
+
+          <div class="profile-section-title">Health Details</div>
+
+          <div class="profile-form-grid">
+            <div class="profile-field">
+              <label for="hba1cTarget">HbA1c Target (%)</label>
+              <input type="text" id="hba1cTarget" placeholder="e.g. 7.0" />
+            </div>
+
+            <div class="profile-field">
+              <label for="diagnosisYear">Year of Diagnosis</label>
+              <input type="number" id="diagnosisYear" min="1950" max="2026" placeholder="e.g. 2021" />
+            </div>
+          </div>
+
+          <div class="profile-field full">
+            <label for="notes">Notes for the AI Assistant</label>
+            <textarea id="notes" placeholder="Other conditions, medicines, preferences — helps the Assistant tailor answers to you."></textarea>
+          </div>
+
+        </form>
+
+        <div class="profile-actions">
+          <span class="profile-saved-msg" id="profileSavedMsg">✓ Saved</span>
+          <button type="button" class="profile-reset-btn" id="profileResetBtn">Discard</button>
+          <button type="submit" form="profileForm" class="profile-save-btn">Save Profile</button>
+        </div>
+      </div>
+
+      <p class="profile-privacy-note">
+        🔒 Your data is stored locally on this device only and is never sent to any server.
+      </p>
+
+    </section>
+
+    <footer>
+      <p>T2D Care © 2026</p>
+      <p style="margin-top:8px;">
+        Educational guidance based on NICE NG28 — Type 2 diabetes in adults: management.
+      </p>
+    </footer>
+
+    <script src="../js/script.js"></script>
+    <script>
+      /* =========================================================
+         PROFILE PAGE — Save/Load logic using localStorage
+         (This page stores profile data client-side only, as
+         stated in its privacy note.)
+         ========================================================= */
+      (function () {
+        const STORAGE_KEY = 't2d-profile';
+        const form = document.getElementById('profileForm');
+        const savedMsg = document.getElementById('profileSavedMsg');
+        const resetBtn = document.getElementById('profileResetBtn');
+        const removePhotoBtn = document.getElementById('removePhotoBtn');
+        const photoInput = document.getElementById('photoInput');
+        const avatarEl = document.getElementById('profileAvatar');
+        const displayNameEl = document.getElementById('profileDisplayName');
+
+        // Fields to persist
+        const fields = ['fullName', 'email', 'age', 'hba1cTarget', 'diagnosisYear', 'notes'];
+
+        // ---- Load saved profile ----
+        function loadProfile() {
+          const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+
+          fields.forEach(id => {
+            const el = document.getElementById(id);
+            if (el && saved[id] !== undefined) el.value = saved[id];
+          });
+
+          // Also try to load name from API profile if available
+          const userId = localStorage.getItem('user_id');
+          if (userId) {
+            fetch(`/api/patient/profile/${userId}`)
+              .then(r => r.json())
+              .then(data => {
+                const p = data.profile || {};
+                if (p.fullName || p.name) {
+                  const name = p.fullName || p.name;
+                  if (!document.getElementById('fullName').value) {
+                    document.getElementById('fullName').value = name;
+                  }
+                  displayNameEl.textContent = name;
+                  if (!saved.photo) {
+                    avatarEl.textContent = name.charAt(0).toUpperCase();
+                  }
+                }
+                if (p.age && !document.getElementById('age').value) {
+                  document.getElementById('age').value = p.age;
+                }
+                if (p.hba1c && !document.getElementById('hba1cTarget').value) {
+                  document.getElementById('hba1cTarget').value = p.hba1c;
+                }
+                if (p.image_path && !saved.photo) {
+                  avatarEl.innerHTML = `<img src="${p.image_path}" alt="Profile" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+                }
+              })
+              .catch(() => {});
+          }
+
+          if (saved.photo) {
+            avatarEl.innerHTML = `<img src="${saved.photo}" alt="Profile" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+          }
+          if (saved.fullName) {
+            displayNameEl.textContent = saved.fullName;
+          }
+        }
+
+        // ---- Save profile ----
+        function saveProfile(e) {
+          if (e) e.preventDefault();
+
+          const data = {};
+          fields.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) data[id] = el.value;
+          });
+
+          // Preserve photo if it exists
+          const existing = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+          if (existing.photo) data.photo = existing.photo;
+
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+          if (data.fullName) {
+            displayNameEl.textContent = data.fullName;
+            if (!data.photo) {
+              avatarEl.textContent = data.fullName.charAt(0).toUpperCase();
+            }
+          }
+
+          // Show saved message
+          savedMsg.style.opacity = '1';
+          setTimeout(() => { savedMsg.style.opacity = '0'; }, 2000);
+        }
+
+        // ---- Discard changes ----
+        function discardChanges() {
+          loadProfile();
+        }
+
+        // ---- Photo upload ----
+        photoInput.addEventListener('change', () => {
+          const file = photoInput.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            avatarEl.innerHTML = `<img src="${e.target.result}" alt="Profile" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+            const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+            data.photo = e.target.result;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+          };
+          reader.readAsDataURL(file);
+        });
+
+        // ---- Remove photo ----
+        removePhotoBtn.addEventListener('click', () => {
+          const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+          delete data.photo;
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+          avatarEl.innerHTML = '';
+          avatarEl.textContent = (data.fullName || '🧑').charAt(0).toUpperCase();
+        });
+
+        // ---- Wire up events ----
+        form.addEventListener('submit', saveProfile);
+        resetBtn.addEventListener('click', discardChanges);
+
+        // Initial load
+        loadProfile();
+      })();
+    </script>
+  </body>
+</html>

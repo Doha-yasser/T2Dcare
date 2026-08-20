@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>T2D Care - Healthy Food Explorer</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script>
+      (function () {
+        var saved = localStorage.getItem("t2d-theme");
+        if (saved === "dark") document.documentElement.setAttribute("data-theme", "dark");
+      })();
+    </script>
+</head>
+
+<body>
+
+    <!-- MEDICAL DISCLAIMER
+    <div class="disclaimer">
+        <strong>Medical Disclaimer:</strong>
+        T2D Care provides educational information based on the NICE guideline
+        for Type 2 diabetes in adults. It does not provide diagnosis or replace
+        personalized medical advice from a qualified healthcare professional.
+        In an emergency, seek immediate medical care.
+    </div> -->
+
+    <!-- NAVIGATION -->
+    <nav>
+        <div class="logo">
+            <div class="logo-icon">♡</div>
+
+            <div class="logo-text">
+                <h2>T2D Care</h2>
+                <span>TYPE 2 DIABETES CARE</span>
+            </div>
+        </div>
+
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="healthy_food.html">Explore</a>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="pipeline.html">Pipeline</a>
+            <a href="about.html">About</a>
+            <a href="profile.html">Profile</a>
+            <button id="themeToggle" class="theme-toggle" type="button" role="switch" aria-checked="false" aria-label="Toggle dark mode">
+                <span class="toggle-knob"></span>
+            </button>
+            <a class="ask-btn" href="chat.html">💬 Ask Assistant</a>
+        </div>
+    </nav>
+
+
+    <!-- HEALTHY FOOD EXPLORER SECTION -->
+    <section class="food-explorer" id="food-explorer">
+
+        <div class="food-explorer-header">
+
+            <span class="food-label">
+                NUTRITION EXPLORER
+            </span>
+
+            <h2>
+                Explore Food Nutrition
+            </h2>
+
+            <p>
+                Search for foods, filter by categories, and explore nutritional
+                information & smart substitutions to help support your diabetes management.
+            </p>
+
+        </div>
+
+
+        <!-- SEARCH & FILTER BOX -->
+        <div class="food-search">
+
+            <select id="categorySelect" onchange="searchFood()">
+                <option value="">All Categories</option>
+            </select>
+
+            <input type="text" id="foodInput" dir="ltr"
+                placeholder="Search for a food or ingredient... e.g. apple, oats, egg" onkeydown="handleFoodKey(event)">
+
+            <button onclick="searchFood()">
+                Search
+            </button>
+
+        </div>
+
+
+        <!-- DISCLAIMER -->
+        <p class="food-disclaimer">
+            Nutritional information is provided for educational
+            purposes and is not a personalized medical recommendation.
+        </p>
+
+
+        <!-- DYNAMIC RESULTS -->
+        <div id="foodResults" class="food-results">
+        </div>
+
+
+        <!-- API CREDIT -->
+        <div class="api-credit">
+            Nutrition data powered by
+            Egyptian Food Dataset, Edamam, and Spoonacular.
+        </div>
+
+    </section>
+
+
+    <!-- FOOTER -->
+    <footer>
+
+        <p>
+            T2D Care © 2026
+        </p>
+
+        <p style="margin-top:8px;">
+            Educational guidance based on NICE NG28 —
+            Type 2 diabetes in adults: management.
+        </p>
+
+    </footer>
+
+
+    <!-- JAVASCRIPT -->
+    <script src="../js/script.js"></script>
+    <script src="../js/healthy.js"></script>
+
+</body>
+
+</html>

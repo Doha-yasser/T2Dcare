@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>T2D Care — Pipeline Dashboard</title>
+
+    <link rel="stylesheet" href="../css/style.css">
+    
+    <script>
+        (function () {
+            var saved = localStorage.getItem("t2d-theme");
+            if (saved === "dark") document.documentElement.setAttribute("data-theme", "dark");
+        })();
+    </script>
+</head>
+
+<body>
+
+    <!-- =========================
+         NAVIGATION
+    ========================== -->
+
+    <nav>
+
+        <div class="logo">
+
+            <div class="logo-icon">
+                ♡
+            </div>
+
+            <div class="logo-text">
+
+                <h2>T2D Care</h2>
+
+                <span>
+                    TYPE 2 DIABETES CARE
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="healthy_food.html">Explore</a>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="pipeline.html">Pipeline</a>
+            <a href="about.html">About</a>
+            <a href="profile.html">Profile</a>
+            <button id="themeToggle" class="theme-toggle" type="button" role="switch" aria-checked="false" aria-label="Toggle dark mode">
+                <span class="toggle-knob"></span>
+            </button>
+            <a class="ask-btn" href="chat.html">💬 Ask Assistant</a>
+        </div>
+    </nav>
+
+
+    <!-- =========================
+         PIPELINE DASHBOARD
+    ========================== -->
+
+    <main class="dashboard-page">
+
+        <div class="dashboard-header">
+            <h1>T2Dcare RAG Pipeline Dashboard</h1>
+            <p class="dashboard-subtitle">
+                Question → Retrieved chunks → Selected chunk → Validation → Precision → Answer
+            </p>
+        </div>
+
+        <div id="results">
+            <p class="loading">No pipeline data yet. Ask a question in the <a href="chat.html">AI Assistant</a> and click "View Pipeline on Dashboard" to see the trace here.</p>
+        </div>
+
+    </main>
+
+
+
+    <!-- =========================
+         FOOTER
+    ========================== -->
+
+    <footer>
+
+        <p>
+            T2D Care © 2026
+        </p>
+
+        <p style="margin-top:8px;">
+
+            Educational guidance based on NICE NG28 —
+            Type 2 diabetes in adults: management.
+
+        </p>
+
+    </footer>
+
+
+    <script src="../js/script.js"></script>
+    <script>
+    (function () {
+        const resultsDiv = document.getElementById('results');
+        const raw = sessionStorage.getItem('latest-pipeline-trace');
+        if (!raw) return;
+
+        let trace;
+        try { trace = JSON.parse(raw); } catch { return; }
+
+        if (trace.skipped) {
+            resultsDiv.innerHTML = '<p class="loading">The last response was a greeting or out-of-scope — no retrieval pipeline to display.</p>';
+            return;
+        }
+
+        const chunks = trace.retrieved_chunks || [];
+        const selectedId = trace.selected_chunk_id;
+        const validation = trace.validation || {};
+        const question = trace.question || '';
+
+        // Precision: fraction of retrieved chunks within threshold
+        const threshold = validation.threshold || 0.7;
+        const relevantCount = chunks.filter(c => c.distance <= threshold).length;
+        const precision = chunks.length > 0 ? (relevantCount / chunks.length) : 0;
+
+        let html = '';
+
+        // Step 1: Question
+        html += `
+        <div class="step">
+            <h2>Step 1 — Question</h2>
+            <div class="answer-box">${esc(question)}</div>
+        </div>`;
+
+        // Step 2: Retrieved chunks
+        html += `<div class="step"><h2>Step 2 — Retrieved Chunks (${chunks.length})</h2>`;
+        chunks.forEach(c => {
+            const isSelected = c.chunk_id === selectedId;
+            html += `
+            <div class="chunk-row${isSelected ? ' selected' : ''}">
+                <div class="chunk-row-header">
+                    <span class="chunk-id">${esc(c.chunk_id)}${isSelected ? ' ✅ Selected' : ''}</span>
+                    <span class="distance">distance: ${c.distance.toFixed(4)}</span>
+                </div>
+                <div class="chunk-preview">${esc(c.text.slice(0, 200))}${c.text.length > 200 ? '…' : ''}</div>
+            </div>`;
+        });
+        html += `</div>`;
+
+        // Step 3: Validation
+        html += `
+        <div class="step">
+            <h2>Step 3 — Validation</h2>
+            <p>Threshold: <strong>${threshold}</strong> &nbsp;|&nbsp; Best distance: <strong>${validation.best_distance != null ? validation.best_distance.toFixed(4) : 'N/A'}</strong></p>
+            <span class="badge ${validation.passed ? 'pass' : 'fail'}">${validation.passed ? '✓ Passed' : '✗ Failed'}</span>
+        </div>`;
+
+        // Step 4: Precision
+        html += `
+        <div class="step">
+            <h2>Step 4 — Precision</h2>
+            <div class="precision-metrics">
+                <div class="metric-card">
+                    <span class="metric-value">${(precision * 100).toFixed(1)}%</span>
+                    <span class="metric-label">Retrieval Precision</span>
+                    <span class="metric-sub">${relevantCount} of ${chunks.length} chunks within threshold</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-value">${validation.best_distance != null ? validation.best_distance.toFixed(4) : 'N/A'}</span>
+                    <span class="metric-label">Best Distance</span>
+                    <span class="metric-sub">Lower is better (threshold: ${threshold})</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-value">${chunks.length}</span>
+                    <span class="metric-label">Chunks Retrieved</span>
+                    <span class="metric-sub">Top-K from vector store</span>
+                </div>
+            </div>
+        </div>`;
+
+        resultsDiv.innerHTML = html;
+
+        function esc(str) {
+            const d = document.createElement('div');
+            d.textContent = str || '';
+            return d.innerHTML;
+        }
+    })();
+    </script>
+
+</body>
+
+</html>

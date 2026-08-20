@@ -1,0 +1,128 @@
+.about-page {
+    max-width: 950px;
+    margin: 0 auto;
+    padding: 60px 6% 20px;
+}
+
+.about-header {
+    text-align: center;
+    margin-bottom: 45px;
+}
+
+.about-header h1 {
+    font-size: 34px;
+    color: #173f45;
+    margin-bottom: 12px;
+}
+
+.about-subtitle {
+    color: #6a7e82;
+    font-size: 15px;
+    max-width: 620px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+.about-block {
+    background: #ffffff;
+    border: 1px solid #e5e9ec;
+    border-radius: 16px;
+    padding: 26px 30px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+.about-block h2 {
+    font-size: 19px;
+    color: #17474d;
+    margin-bottom: 10px;
+}
+
+.about-block p {
+    color: #4a6265;
+    font-size: 14.5px;
+    line-height: 1.7;
+}
+
+.about-block p a {
+    color: #087f83;
+    font-weight: bold;
+}
+
+.about-block.disclaimer-block {
+    background: #fff8e6;
+    border-color: #f2e2b3;
+}
+
+.about-block.disclaimer-block h2 {
+    color: #8a6200;
+}
+
+.about-block.disclaimer-block p {
+    color: #6b5a2a;
+}
+
+@media (max-width: 650px) {
+    .about-page {
+        padding: 40px 20px 10px;
+    }
+
+    .about-header h1 {
+        font-size: 27px;
+    }
+
+    .about-block {
+        padding: 20px 22px;
+    }
+}
+
+.team-section {
+    max-width: 1100px;
+    margin: 60px auto;
+    padding: 0 24px;
+    text-align: center;
+}
+
+.team-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    margin-top: 32px;
+}
+
+@media (max-width: 900px) {
+    .team-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 500px) {
+    .team-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.team-card {
+    background: #fff;
+    border: 1px solid #e5e9ec;
+    border-radius: 14px;
+    padding: 28px 18px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.team-avatar {
+    font-size: 40px;
+    margin-bottom: 12px;
+}
+
+.team-card h3 {
+    margin: 0 0 8px;
+    font-size: 17px;
+}
+
+.team-card p {
+    font-size: 13.5px;
+    color: #5a6672;
+    line-height: 1.5;
+    margin: 0;
+}

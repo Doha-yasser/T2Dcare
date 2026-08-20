@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>MedicDr T2D - Lifestyle &amp; Rules</title>
+    <link rel="stylesheet" href="../css/dashboard.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div>
+                <div class="brand-logo">
+                    <h2>🩺 T2D Care <span>T2D AI</span></h2>
+                </div>
+
+                <div class="profile-card-mini">
+                    <div class="avatar-circle" id="userAvatar">--</div>
+                    <h4 id="dispName">Loading...</h4>
+                    <p id="dispAgeGender">Age: -- | --</p>
+                </div>
+
+                <nav class="sidebar-menu">
+                    <button class="menu-item" onclick="location.href='dashboard.html'">📊 Dashboard Overview</button>
+                    <button class="menu-item" onclick="location.href='treatment.html'">💊 Treatment Plan</button>
+                    <button class="menu-item active" onclick="location.href='lifestyle.html'">🏃 Lifestyle &amp; Rules</button>
+                    <button class="menu-item" onclick="location.href='chat.html'">💬 Discuss My Result</button>
+                    <button class="menu-item" onclick="location.href='settings.html'">⚙️ Settings</button>
+                </nav>
+            </div>
+            <button class="btn-logout" onclick="logout()">Sign Out</button>
+        </aside>
+
+        <main class="main-content">
+            <div class="top-bar">
+                <div>
+                    <h2>Lifestyle &amp; Safety Settings</h2>
+                    <p>Activity factors, caloric corrections, and safety rules.</p>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top:20px;">
+                <h3>🏃 Activity &amp; Target Rules</h3>
+                <div class="info-list-group" id="lifestyleInfoList" style="margin-top:15px;">
+                    <div class="info-item"><span>Loading...</span><strong>--</strong></div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="../js/dashboard.js"></script>
+    <script>
+        // Load patient-specific lifestyle data
+        (async function () {
+            const userId = localStorage.getItem('user_id');
+            if (!userId) { window.location.href = 'signin.html'; return; }
+
+            try {
+                const res = await fetch(`/api/patient/profile/${userId}`);
+                const data = await res.json();
+                const p = data.profile || data;
+
+                const activity = p.activity_level || 'Not specified';
+                const hypoStatus = p.hypo_unawareness ? 'Enabled' : 'Disabled';
+                const guideline = p.target_guideline || 'NICE Guideline (70 - 180 mg/dL)';
+
+                const listEl = document.getElementById('lifestyleInfoList');
+                if (listEl) {
+                    listEl.innerHTML = `
+                        <div class="info-item"><span>Activity Level</span><strong>${activity}</strong></div>
+                        <div class="info-item"><span>Hypo Unawareness Alert</span><strong>${hypoStatus}</strong></div>
+                        <div class="info-item"><span>Target Range Guideline</span><strong>${guideline}</strong></div>
+                    `;
+                }
+            } catch (err) {
+                console.error('Failed to load lifestyle data:', err);
+            }
+        })();
+    </script>
+</body>
+
+</html>

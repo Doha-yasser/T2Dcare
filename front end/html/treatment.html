@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>MedicDr T2D - Treatment Plan</title>
+    <link rel="stylesheet" href="../css/dashboard.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div>
+                <div class="brand-logo">
+                    <h2>🩺 T2D Care <span>T2D AI</span></h2>
+                </div>
+
+                <div class="profile-card-mini">
+                    <div class="avatar-circle" id="userAvatar">--</div>
+                    <h4 id="dispName">Loading...</h4>
+                    <p id="dispAgeGender">Age: -- | --</p>
+                </div>
+
+                <nav class="sidebar-menu">
+                    <button class="menu-item" onclick="location.href='dashboard.html'">📊 Dashboard Overview</button>
+                    <button class="menu-item active" onclick="location.href='treatment.html'">💊 Treatment Plan</button>
+                    <button class="menu-item" onclick="location.href='lifestyle.html'">🏃 Lifestyle &amp; Rules</button>
+                    <button class="menu-item" onclick="location.href='chat.html'">💬 Discuss My Result</button>
+                    <button class="menu-item" onclick="location.href='settings.html'">⚙️ Settings</button>
+                </nav>
+            </div>
+            <button class="btn-logout" onclick="logout()">Sign Out</button>
+        </aside>
+
+        <main class="main-content">
+            <div class="top-bar">
+                <div>
+                    <h2>Medication &amp; Treatment Schedule</h2>
+                    <p>Track your daily dosages and medication adherence.</p>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top:20px;">
+                <h3>💊 Active Medications</h3>
+                <div class="info-list-group" id="treatmentMedsList" style="margin-top:15px;">
+                    <div class="info-item"><span>Loading...</span><strong>--</strong></div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="../js/dashboard.js"></script>
+    <script>
+        // Load patient-specific treatment data
+        (async function () {
+            const userId = localStorage.getItem('user_id');
+            if (!userId) { window.location.href = 'signin.html'; return; }
+
+            try {
+                const res = await fetch(`/api/patient/profile/${userId}`);
+                const data = await res.json();
+                const p = data.profile || data;
+
+                const medType = p.medicationType || p.medication_type || 'Not specified';
+                const medDetails = p.medications || 'No medications recorded';
+
+                const listEl = document.getElementById('treatmentMedsList');
+                if (listEl) {
+                    listEl.innerHTML = `
+                        <div class="info-item"><span>Treatment Type</span><strong>${medType}</strong></div>
+                        <div class="info-item"><span>Medication Details</span><strong>${medDetails}</strong></div>
+                        <div class="info-item"><span>HbA1c</span><strong>${p.hba1c ? p.hba1c + '%' : '--'}</strong></div>
+                    `;
+                }
+            } catch (err) {
+                console.error('Failed to load treatment data:', err);
+            }
+        })();
+    </script>
+</body>
+
+</html>
